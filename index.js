@@ -20,10 +20,25 @@ const client = new MongoClient(uri, {
   },
 });
 
+const touristSpotCollection = client
+  .db("travelize_bd_DB")
+  .collection("touristSpot");
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    app.get("/api/v1/initialTouristSpots", async (req, res) => {
+      const result = await touristSpotCollection.find().limit(3).toArray();
+      res.send(result);
+    });
+
+    app.get("/api/v1/touristSpots", async (req, res) => {
+      const result = await touristSpotCollection.find().toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
