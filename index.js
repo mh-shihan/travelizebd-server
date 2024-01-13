@@ -20,22 +20,30 @@ const client = new MongoClient(uri, {
   },
 });
 
-const touristSpotCollection = client
+const packageCollection = client
   .db("travelize_bd_DB")
-  .collection("touristSpot");
+  .collection("allPackages");
+const tourGuideCollection = client
+  .db("travelize_bd_DB")
+  .collection("tourGuides");
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    app.get("/api/v1/initialTouristSpots", async (req, res) => {
-      const result = await touristSpotCollection.find().limit(3).toArray();
+    app.get("/api/v1/initialPackages", async (req, res) => {
+      const result = await packageCollection.find().limit(3).toArray();
       res.send(result);
     });
 
-    app.get("/api/v1/touristSpots", async (req, res) => {
-      const result = await touristSpotCollection.find().toArray();
+    app.get("/api/v1/allPackages", async (req, res) => {
+      const result = await packageCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/api/v1/tourGuides", async (req, res) => {
+      const result = await tourGuideCollection.find().toArray();
       res.send(result);
     });
 
