@@ -26,6 +26,9 @@ const packageCollection = client
 const tourGuideCollection = client
   .db("travelize_bd_DB")
   .collection("tourGuides");
+const touristStoryCollection = client
+  .db("travelize_bd_DB")
+  .collection("touristStory");
 
 async function run() {
   try {
@@ -43,6 +46,11 @@ async function run() {
     });
 
     app.get("/api/v1/tourGuides", async (req, res) => {
+      const result = await tourGuideCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/api/v1/touristStories", async (req, res) => {
       const result = await tourGuideCollection.find().toArray();
       res.send(result);
     });
