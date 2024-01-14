@@ -35,6 +35,8 @@ const touristStoryCollection = client
   .db("travelize_bd_DB")
   .collection("touristStory");
 
+const wishlistCollection = client.db("travelize_bd_DB").collection("wishlist");
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -47,6 +49,24 @@ async function run() {
       res.send({ token });
     });
 
+    // Middlewares
+    const verifyToken = (req, res, next) => {
+      // console.log("Inside verify token", req.headers.authorization);
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: "Unauthorized Access" });
+      }
+      const token = req.headers.authorization.split(" ")[1];
+      jwt.verify(token, secret, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: "Unauthorized Access" });
+        }
+        // console.log("Decoded", decoded);
+        req.decoded = decoded;
+        next();
+      });
+    };
+
+    //
     app.get("/api/v1/initialPackages", async (req, res) => {
       const result = await packageCollection.find().limit(3).toArray();
       res.send(result);
@@ -71,6 +91,12 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await touristStoryCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/api/v1/user/wishlists", verifyToken, async (req, res) => {
+      const wishlist = req.body;
+      const result = await wishlistCollection.insertOne(wishlist);
       res.send(result);
     });
 
