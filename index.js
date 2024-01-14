@@ -94,6 +94,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/api/v1/packageDetails", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await packageCollection.findOne(query);
+      res.send(result);
+    });
+
     app.post("/api/v1/user/wishlists", verifyToken, async (req, res) => {
       const wishlist = req.body;
       const result = await wishlistCollection.insertOne(wishlist);
