@@ -1,8 +1,11 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const app = express();
+
 const port = process.env.POET || 5000;
+const secret = process.env.ACCESS_TOKEN_SECRET;
 
 //  parser
 app.use(cors());
@@ -23,9 +26,11 @@ const client = new MongoClient(uri, {
 const packageCollection = client
   .db("travelize_bd_DB")
   .collection("allPackages");
+
 const tourGuideCollection = client
   .db("travelize_bd_DB")
   .collection("tourGuides");
+
 const touristStoryCollection = client
   .db("travelize_bd_DB")
   .collection("touristStory");
@@ -34,6 +39,13 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    // JWT related api
+    app.post("/api/v1/jwt/access-token", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, secret, { expiresIn: "24h" });
+      res.send({ token });
+    });
 
     app.get("/api/v1/initialPackages", async (req, res) => {
       const result = await packageCollection.find().limit(3).toArray();
