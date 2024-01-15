@@ -36,6 +36,7 @@ const touristStoryCollection = client
   .collection("touristStory");
 
 const wishlistCollection = client.db("travelize_bd_DB").collection("wishlist");
+const bookingCollection = client.db("travelize_bd_DB").collection("bookings");
 
 async function run() {
   try {
@@ -94,7 +95,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/api/v1/packageDetails", async (req, res) => {
+    app.get("/api/v1/viewPackages/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await packageCollection.findOne(query);
@@ -107,6 +108,12 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/api/v1/user/bookings", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
+      res.send(result);
+    });
+    // Send a ping to confirm a successful connection
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
