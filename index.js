@@ -107,13 +107,30 @@ async function run() {
       const queryEmail = req.query.email;
       const decodedEmail = req.decoded.email;
       let query = {};
-      if (queryEmail !== decodedEmail) {
-        return res.status(403).send({ message: "Forbidden Access" });
-      }
+
       if (queryEmail) {
+        if (queryEmail !== decodedEmail) {
+          return res.status(403).send({ message: "Forbidden Access" });
+        }
         query = { email: queryEmail };
       }
+
       const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
+    // Get Wishlist
+    app.get("/api/v1/user/wishlist", verifyToken, async (req, res) => {
+      const queryEmail = req.query.email;
+      const decodedEmail = req.decoded.email;
+      let query = {};
+
+      if (queryEmail) {
+        if (queryEmail !== decodedEmail) {
+          return res.status(403).send({ message: "Forbidden Access" });
+        }
+      }
+
+      const result = await wishlistCollection.find(query).toArray();
       res.send(result);
     });
 
