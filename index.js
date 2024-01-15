@@ -102,6 +102,21 @@ async function run() {
       res.send(result);
     });
 
+    // Get Booking
+    app.get("/api/v1/user/bookings", verifyToken, async (req, res) => {
+      const queryEmail = req.query.email;
+      const decodedEmail = req.decoded.email;
+      let query = {};
+      if (queryEmail !== decodedEmail) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+      if (queryEmail) {
+        query = { email: queryEmail };
+      }
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post("/api/v1/user/wishlists", verifyToken, async (req, res) => {
       const wishlist = req.body;
       const result = await wishlistCollection.insertOne(wishlist);
