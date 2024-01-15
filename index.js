@@ -119,7 +119,7 @@ async function run() {
       res.send(result);
     });
     // Get Wishlist
-    app.get("/api/v1/user/wishlist", verifyToken, async (req, res) => {
+    app.get("/api/v1/user/wishlists", verifyToken, async (req, res) => {
       const queryEmail = req.query.email;
       const decodedEmail = req.decoded.email;
       let query = {};
@@ -145,6 +145,17 @@ async function run() {
       const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
+
+    app.delete(
+      "/api/v1/user/deleteWishlists/:id",
+      verifyToken,
+      async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await wishlistCollection.deleteOne(query);
+        res.send(result);
+      }
+    );
     // Send a ping to confirm a successful connection
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
