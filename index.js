@@ -67,6 +67,24 @@ async function run() {
       });
     };
 
+    // Admin API
+    app.get("/api/v1/admin/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded?.email) {
+        return res.status(403).status({ message: "Forbidden access" });
+      }
+      const query = { email };
+
+      const user = await userCollection.findOne(query);
+
+      let admin = false;
+      if (user) {
+        admin = user?.role === "admin";
+      }
+
+      res.send({ admin });
+    });
+
     // User Related API
     app.post("/api/v1/users", async (req, res) => {
       const user = req.body;
@@ -135,6 +153,7 @@ async function run() {
       const result = await bookingCollection.find(query).toArray();
       res.send(result);
     });
+
     // Get Wishlist
     app.get("/api/v1/user/wishlists", verifyToken, async (req, res) => {
       const queryEmail = req.query.email;
@@ -151,6 +170,13 @@ async function run() {
       const result = await wishlistCollection.find(query).toArray();
       res.send(result);
     });
+    // Get specific user role
+    app.get("/api/v1/role", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      const query = { email };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
 
     app.post("/api/v1/user/wishlists", verifyToken, async (req, res) => {
       const wishlist = req.body;
@@ -161,6 +187,26 @@ async function run() {
     app.post("/api/v1/user/bookings", async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
+      res.send(result);
+    });
+
+    app.post("/api/v1/addPackages", verifyToken, async (req, res) => {
+      const package = req.body;
+      const result = await packageCollection.insertOne(package);
+      res.send(result);
+    });
+
+    app.patch("/api/v1/admin/updateRole/:id", async (req, res) => {
+      const id = req.params.id;
+      const role = req.body.role;
+      const filter = { _id: new ObjectId(id) };
+      console.log(id, role);
+      const updatedDoc = {
+        $set: {
+          role: role,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
 
