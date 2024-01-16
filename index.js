@@ -67,6 +67,17 @@ async function run() {
       });
     };
 
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded?.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+      next();
+    };
+
     // Admin API
     app.get("/api/v1/admin/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
@@ -85,6 +96,22 @@ async function run() {
       res.send({ admin });
     });
 
+    // Tour Guide api
+    app.get("/api/v1/tourGuides/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded?.email) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+      const query = { email };
+      const user = await userCollection.findOne(query);
+
+      let tourGuide = false;
+      if (user) {
+        tourGuide = user?.role === "tour guide";
+      }
+      res.send({ tourGuide });
+    });
+
     // User Related API
     app.post("/api/v1/users", async (req, res) => {
       const user = req.body;
@@ -97,7 +124,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/api/v1/users", verifyToken, async (req, res) => {
+    app.get("/api/v1/users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -170,11 +197,17 @@ async function run() {
       const result = await wishlistCollection.find(query).toArray();
       res.send(result);
     });
-    // Get specific user role
+    // Get specific user role dashboard profile
     app.get("/api/v1/role", verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = { email };
       const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.get("/api/v1/tourGuideRoles", async (req, res) => {
+      const query = { role: "tour guide" };
+      const result = await userCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -184,31 +217,40 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/api/v1/user/bookings", async (req, res) => {
+    app.post("/api/v1/user/bookings", verifyToken, async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
 
-    app.post("/api/v1/addPackages", verifyToken, async (req, res) => {
-      const package = req.body;
-      const result = await packageCollection.insertOne(package);
-      res.send(result);
-    });
+    app.post(
+      "/api/v1/addPackages",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const package = req.body;
+        const result = await packageCollection.insertOne(package);
+        res.send(result);
+      }
+    );
 
-    app.patch("/api/v1/admin/updateRole/:id", async (req, res) => {
-      const id = req.params.id;
-      const role = req.body.role;
-      const filter = { _id: new ObjectId(id) };
-      console.log(id, role);
-      const updatedDoc = {
-        $set: {
-          role: role,
-        },
-      };
-      const result = await userCollection.updateOne(filter, updatedDoc);
-      res.send(result);
-    });
+    app.patch(
+      "/api/v1/admin/updateRole/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const role = req.body.role;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: role,
+          },
+        };
+        const result = await userCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+      }
+    );
 
     app.delete(
       "/api/v1/user/deleteWishlists/:id",
