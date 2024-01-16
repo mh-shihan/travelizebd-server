@@ -37,6 +37,7 @@ const touristStoryCollection = client
 
 const wishlistCollection = client.db("travelize_bd_DB").collection("wishlist");
 const bookingCollection = client.db("travelize_bd_DB").collection("bookings");
+const userCollection = client.db("travelize_bd_DB").collection("users");
 
 async function run() {
   try {
@@ -61,13 +62,29 @@ async function run() {
         if (err) {
           return res.status(401).send({ message: "Unauthorized Access" });
         }
-        // console.log("Decoded", decoded);
         req.decoded = decoded;
         next();
       });
     };
 
-    //
+    // User Related API
+    app.post("/api/v1/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "User already exists", insertedId: null });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.get("/api/v1/users", verifyToken, async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    //Public API
     app.get("/api/v1/initialPackages", async (req, res) => {
       const result = await packageCollection.find().limit(3).toArray();
       res.send(result);
@@ -128,6 +145,7 @@ async function run() {
         if (queryEmail !== decodedEmail) {
           return res.status(403).send({ message: "Forbidden Access" });
         }
+        query = { email: queryEmail };
       }
 
       const result = await wishlistCollection.find(query).toArray();
