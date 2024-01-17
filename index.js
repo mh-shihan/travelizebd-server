@@ -164,6 +164,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/api/v1/tourGuideDetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await tourGuideCollection.findOne(query);
+      res.send(result);
+    });
+
     // Get Booking
     app.get("/api/v1/user/bookings", verifyToken, async (req, res) => {
       const queryEmail = req.query.email;
@@ -211,6 +218,18 @@ async function run() {
       res.send(result);
     });
 
+    // Tour guide api
+    app.get(
+      "/api/v1/guidesAssignedBookings/:guideName",
+      verifyToken,
+      async (req, res) => {
+        const guideName = req.params.guideName;
+        const query = { guide: guideName };
+        const result = await bookingCollection.find(query).toArray();
+        res.send(result);
+      }
+    );
+
     app.post("/api/v1/user/wishlists", verifyToken, async (req, res) => {
       const wishlist = req.body;
       const result = await wishlistCollection.insertOne(wishlist);
@@ -248,6 +267,23 @@ async function run() {
           },
         };
         const result = await userCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+      }
+    );
+
+    app.patch(
+      "/api/v1/tourGuide/updateStatus/:id",
+      verifyToken,
+      async (req, res) => {
+        const id = req.params.id;
+        const status = req.body.status;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            packageStatus: status,
+          },
+        };
+        const result = await bookingCollection.updateOne(filter, updatedDoc);
         res.send(result);
       }
     );
