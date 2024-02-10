@@ -129,6 +129,25 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/api/v1/user", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      const query = { email };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/api/v1/user", verifyToken, async (req, res) => {
+      const updatedInfo = req.body;
+      const filter = { email: req.query.email };
+      const updatedDoc = {
+        $set: {
+          ...updatedInfo,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
     //Public API
     app.get("/api/v1/initialPackages", async (req, res) => {
       const result = await packageCollection.find().limit(3).toArray();
