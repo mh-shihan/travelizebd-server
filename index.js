@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const app = express();
 
-const port = process.env.POET || 5000;
+const port = process.env.PORT || 5000;
 const secret = process.env.ACCESS_TOKEN_SECRET;
 
 //  parser
